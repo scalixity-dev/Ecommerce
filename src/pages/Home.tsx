@@ -6,6 +6,8 @@ import PromoProducts from '../components/home/PromoProducts';
 import TrendingDeals from '../components/home/TrendingDeals';
 import NewsletterSignup from '../components/home/NewsletterSignup';
 import Brands from '../components/home/brands';
+import Technology from '../components/home/Technology';
+import Services from '../components/home/Services';
 
 const Home: React.FC = () => {
   return (
@@ -17,6 +19,8 @@ const Home: React.FC = () => {
         <FeaturedProducts />
         <PromoProducts />
         <TrendingDeals />
+        <Technology />
+        <Services />
       </div>
     </div>
   );

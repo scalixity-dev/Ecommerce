@@ -9,6 +9,8 @@ export interface Product {
   images?: string[];
   category: string;
   featured?: boolean;
+  favourite?: boolean;
+  isNew?: boolean;
   rating: number;
   reviews: number;
   stock: number;
