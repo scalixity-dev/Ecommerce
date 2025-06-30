@@ -13,6 +13,9 @@ export type FeaturedProduct = {
   discount_pct: number;
   product_description: string;
   images: string[];
+  // Backend-calculated pricing fields
+  price: number;
+  originalPrice: number | null;
   category: {
     category_id: number;
     name: string;
@@ -224,7 +227,7 @@ const FeaturedProducts: React.FC = () => {
                     product={{
                       id: product.product_id,
                       name: product.product_name,
-                      price: product.selling_price,
+                      price: product.price, // Use backend-calculated price
                       rating: 0,
                       reviews: 0,
                       stock: product.stock?.stock_qty || 0,
@@ -233,7 +236,7 @@ const FeaturedProducts: React.FC = () => {
                       category: product.category?.name || '',
                       currency: 'INR',
                       tags: [],
-                      originalPrice: product.special_price || undefined,
+                      original_price: product.originalPrice || 0, // Use backend-calculated originalPrice
                       sku: '',
                       primary_image: product.images?.[0] || ''
                     }}

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProductCard from '../product/ProductCard';
-import { Product as CartProduct } from '../../types';
 import { useHorizontalScroll } from '../../hooks/useHorizontalScroll';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -28,9 +27,10 @@ interface Product {
   product_id: number;
   product_name: string;
   product_description: string;
-  selling_price: number;
-  cost_price: number;
-  originalPrice?: number;
+  price: number;  // Use price from backend (already calculated with special price logic)
+  originalPrice: number;  // Use originalPrice from backend
+  selling_price?: number;  // Keep for backward compatibility
+  cost_price?: number;  // Keep for backward compatibility
   image: string;
   stock: number;
   isNew?: boolean;
@@ -64,27 +64,6 @@ interface CategoryWithProducts {
 interface CategoryState {
   activeCategory: string;
   currentPage: number;
-}
-
-interface CartProduct {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  stock: number;
-  isNew?: boolean;
-  featured?: boolean;
-  favourite?: boolean;
-  sku: string;
-  currency: string;
-  category: {
-    category_id: number;
-    name: string;
-  };
-  rating: number;
-  reviews: number;
 }
 
 const HomepageProducts: React.FC = () => {
@@ -128,28 +107,6 @@ const HomepageProducts: React.FC = () => {
     window.addEventListener('resize', updateItemsPerView);
     return () => window.removeEventListener('resize', updateItemsPerView);
   }, []);
-
-  // Convert API product to cart product format
-  const convertToCartProduct = (product: Product): CartProduct => ({
-    id: product.product_id,
-    name: product.product_name,
-    description: product.product_description,
-    price: product.selling_price,
-    originalPrice: product.special_price || undefined,
-    image: product.media?.[0]?.url || product.image,
-    stock: product.stock,
-    isNew: product.isNew,
-    featured: product.featured,
-    favourite: product.favourite,
-    sku: product.sku,
-    currency: 'INR',
-    category: {
-      category_id: product.category_id,
-      name: 'General'
-    },
-    rating: 0,
-    reviews: 0
-  });
 
   useEffect(() => {
     const fetchHomepageProducts = async () => {
@@ -197,8 +154,35 @@ const HomepageProducts: React.FC = () => {
     return (
       <ProductCard
         key={product.product_id}
-
-        product={convertToCartProduct(product)}
+        product={{
+          id: product.product_id,
+          name: product.product_name,
+          price: product.price || product.selling_price || 0,  // Use backend-calculated price, fallback to selling_price
+          original_price: product.originalPrice || product.cost_price || 0,  // Use backend-calculated originalPrice, fallback to cost_price
+          special_price: product.special_price,
+          image_url: product.media?.[0]?.url || product.image,
+          images: product.media?.map(m => m.url) || [product.image],
+          stock: product.stock,
+          is_deleted: false,
+          sku: product.sku,
+          description: product.product_description,
+          category: {
+            category_id: product.category_id,
+            name: 'General'
+          },
+          brand: {
+            brand_id: product.brand_id,
+            name: 'Brand'
+          },
+          special_start: product.special_start,
+          special_end: product.special_end,
+          discount_pct: product.discount_pct,
+          rating: 0,
+          reviews: 0,
+          isNew: product.isNew,
+          currency: 'INR',
+          tags: [],
+        }}
         isNew={product.isNew}
         salePercentage={product.discount_pct}
       />

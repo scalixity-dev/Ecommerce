@@ -19,6 +19,9 @@ export type PromoProduct = {
   discount_pct: number;
   product_description: string;
   images: string[];
+  // Backend-calculated pricing fields
+  price: number;
+  originalPrice: number | null;
   category: {
     category_id: number;
     name: string;
@@ -188,8 +191,8 @@ const PromoProducts: React.FC = () => {
       await addToCart({
         id: product.product_id,
         name: product.product_name,
-        price: product.special_price || product.selling_price,
-        original_price: product.selling_price,
+        price: product.price, // Use the backend-calculated price
+        original_price: product.originalPrice || product.selling_price, // Use the backend-calculated originalPrice or fallback
         special_price: product.special_price,
         image_url: product.images?.[0] || '/placeholder-image.jpg',
         stock: product.stock?.stock_qty || 0,
@@ -329,8 +332,8 @@ const PromoProducts: React.FC = () => {
           >
             {promoProducts.map((product) => {
               const countdown = product.special_end ? countdowns[product.product_id] : null;
-              const discount = product.special_price
-                ? Math.round(((product.selling_price - product.special_price) / product.selling_price) * 100)
+              const discount = product.originalPrice && product.price !== product.originalPrice
+                ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
                 : 0;
 
               return (
@@ -375,10 +378,10 @@ const PromoProducts: React.FC = () => {
                       <div>
                         <p className="font-normal text-sm font-worksans mb-2">{product.product_name}</p>
                         <div className="flex items-baseline mb-4">
-                          <span className="text-xl font-bold">₹{product.special_price?.toFixed(2) || product.selling_price.toFixed(2)}</span>
-                          {product.special_price && (
+                          <span className="text-xl font-bold">₹{product.price.toFixed(2)}</span>
+                          {product.originalPrice && product.originalPrice !== product.price && (
                             <span className="text-sm text-gray-500 line-through ml-3">
-                              ₹{product.selling_price.toFixed(2)}
+                              ₹{product.originalPrice.toFixed(2)}
                             </span>
                           )}
                         </div>

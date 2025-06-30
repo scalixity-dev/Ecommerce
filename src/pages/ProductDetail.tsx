@@ -41,8 +41,11 @@ interface ProductDetails {
   product_name: string;
   cost_price: number;
   selling_price: number;
+  price?: number; // Backend-calculated price (with special price logic)
+  originalPrice?: number; // Backend-calculated original price
   discount_pct: number;
   special_price: number | null;
+  is_on_special_offer?: boolean;
   description: string;
   media: ProductMedia[];
   meta: ProductMeta;
@@ -384,12 +387,24 @@ const ProductDetail: React.FC = () => {
   }
 
   const handleAddToCart = () => {
+    const calculatedPrice = product.price || product.selling_price;
+    const calculatedOriginalPrice = product.originalPrice || product.cost_price;
+    
+    console.log('Cart Debug:', {
+      'product.price': product.price,
+      'product.originalPrice': product.originalPrice,
+      'product.selling_price': product.selling_price,
+      'product.cost_price': product.cost_price,
+      'calculatedPrice': calculatedPrice,
+      'calculatedOriginalPrice': calculatedOriginalPrice
+    });
+
     const cartProduct: CartProduct = {
       ...product,
       id: product.product_id,
       name: product.product_name,
-      price: product.selling_price,
-      original_price: product.cost_price,
+      price: calculatedPrice, // Use backend-calculated price (with special price logic)
+      original_price: calculatedOriginalPrice, // Use backend-calculated original price
       special_price: product.special_price,
       currency: 'INR',
       image: product.media[0]?.url || '',
@@ -622,7 +637,7 @@ const ProductDetail: React.FC = () => {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-3 pr-4 font-medium text-gray-700">Price</td>
-                    <td className="py-3 text-gray-800">₹{product.selling_price}</td>
+                    <td className="py-3 text-gray-800">₹{product.price || product.selling_price}</td>
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="py-3 pr-4 font-medium text-gray-700">Discount</td>
@@ -1019,11 +1034,21 @@ const ProductDetail: React.FC = () => {
               <div className="mb-3">
                 <div className="flex items-baseline space-x-2">
                   <span className="text-xl sm:text-2xl font-bold text-gray-900">
-                    ₹{product.selling_price}
+                    ₹{product.price || product.selling_price}
                   </span>
-                  {product.cost_price > product.selling_price && (
+                  {(product.originalPrice && product.originalPrice > (product.price || product.selling_price)) && (
+                    <span className="text-sm text-gray-500 line-through">
+                      ₹{product.originalPrice}
+                    </span>
+                  )}
+                  {(!product.originalPrice && product.cost_price > (product.price || product.selling_price)) && (
                     <span className="text-sm text-gray-500 line-through">
                       ₹{product.cost_price}
+                    </span>
+                  )}
+                  {product.is_on_special_offer && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                      Special Offer
                     </span>
                   )}
                 </div>

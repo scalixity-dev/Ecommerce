@@ -185,8 +185,8 @@ const FeaturedProductsPage: React.FC = () => {
         id: String(product.product_id),
         name: product.product_name,
         description: product.product_description,
-        price: product.special_price || product.selling_price,
-        originalPrice: product.selling_price,
+        price: product.price, // Use the backend-calculated price
+        original_price: product.originalPrice, // Use the backend-calculated originalPrice
         currency: 'INR',
         image: product.images?.[0] || '',
         images: product.images || [],
